@@ -1,3 +1,76 @@
+const LEARNER_COMPONENT_EXPANSIONS = Object.freeze({
+  // 夢 is visually ⿱(⿳艹⺫冖)夕. The canonical L1 tree therefore has two children,
+  // but the first child is a structural wrapper with no learner-facing metadata.
+  // Expand only this wrapper for the study cards so the learner sees the useful
+  // visual pieces while the canonical IDS/origin data remains unchanged.
+  '⿳艹⺫冖': Object.freeze([
+    Object.freeze({
+      component: '艹',
+      display: '艹',
+      renderType: 'unicode',
+      renderValue: '艹',
+      glyphwikiName: '',
+      hanViet: 'Thảo',
+      meaning: 'cỏ',
+      mnemonic: 'Hai mầm cỏ nhú ở phía trên; đó là 艹.',
+      position: 'top',
+      positionVi: 'phía trên',
+      role: 'thành phần hình thể',
+      source: 'parent IDS subtree',
+      children: [],
+    }),
+    Object.freeze({
+      component: '⺫',
+      display: '⺫',
+      renderType: 'unicode',
+      renderValue: '⺫',
+      glyphwikiName: '',
+      hanViet: 'Mục/Võng',
+      meaning: 'mắt / lưới ở phía trên',
+      mnemonic: '⺫ gợi hình con mắt hoặc tấm lưới nằm ngang.',
+      position: 'middle',
+      positionVi: 'ở giữa',
+      role: 'thành phần hình thể',
+      source: 'parent IDS subtree',
+      children: [],
+    }),
+    Object.freeze({
+      component: '冖',
+      display: '冖',
+      renderType: 'unicode',
+      renderValue: '冖',
+      glyphwikiName: '',
+      hanViet: 'Mịch',
+      meaning: 'khăn trùm, che đậy',
+      mnemonic: '冖 như một tấm khăn phủ lên phía trên.',
+      position: 'bottom',
+      positionVi: 'phía dưới',
+      role: 'thành phần hình thể',
+      source: 'parent IDS subtree',
+      children: [],
+    }),
+  ]),
+});
+
+function expandLearnerComponents(components) {
+  if (!Array.isArray(components) || components.length === 0) return components || [];
+
+  let changed = false;
+  const expanded = components.flatMap((component) => {
+    const replacement = LEARNER_COMPONENT_EXPANSIONS[component?.component];
+    if (!replacement) return [component];
+    changed = true;
+    return replacement.map((entry) => ({ ...entry }));
+  });
+
+  return changed ? expanded : components;
+}
+
+function normaliseLearnerCard(card) {
+  const components = expandLearnerComponents(card?.components);
+  return components === card?.components ? card : { ...card, components };
+}
+
 export async function loadManifest() {
   const response = await fetch(`${import.meta.env.BASE_URL}data/decks.json`, { cache: 'no-cache' });
   if (!response.ok) throw new Error(`Không tải được danh sách khóa (${response.status})`);
@@ -7,7 +80,7 @@ export async function loadManifest() {
 export async function loadDeck(fileOrFiles) {
   const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
   const chunks = await Promise.all(files.map(loadJsonResource));
-  return chunks.flat();
+  return chunks.flat().map(normaliseLearnerCard);
 }
 
 async function loadJsonResource(file) {
