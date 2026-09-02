@@ -51,3 +51,14 @@ Okurigana chung ở cuối được tách ra khỏi ruby khi có thể, ví dụ
 ## Thứ tự nét
 
 Frontend lấy KanjiVG theo codepoint và chỉ tái dựng các `<path>`/số thứ tự nét trong SVG để animate. Có fallback ảnh SVG nếu fetch/parse animation thất bại.
+
+
+## Quy tắc decomposition UI
+
+Frontend **luôn render cấu tạo nhìn thấy của chữ hiện đại** từ `kanji_visual_components_l1` / `current_visual_ids`.
+`origin_ids` chỉ dùng trong phần nguồn gốc/tự nguyên, không được dùng làm component cards.
+
+Ví dụ bắt buộc:
+- `間` hiện đại = `⿵門日` → card phải là **門 + 日**.
+- Dạng lịch sử/origin có thể là `閒 = ⿵門月`; thông tin này chỉ xuất hiện trong phần tự nguyên.
+- Recursive chỉ mở khi decomposition cấp dưới đủ rõ cho người học; không mở các mảnh kỹ thuật vô nghĩa như decomposition nội bộ của `門`.
