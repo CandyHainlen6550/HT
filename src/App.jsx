@@ -385,6 +385,44 @@ function sourceLabel(value) {
   return labels[value] || value || 'Nguồn khác';
 }
 
+function getFormationEvolutionPath(card, formation) {
+  if (!formation) return '';
+
+  const rawPath = String(formation.originPath || '').trim();
+  const current = String(card?.kanji || '').trim();
+  const origin = String(formation.originChar || '').trim();
+
+  if (rawPath) {
+    const parts = rawPath
+      .split(/\s*→\s*/u)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    if (parts.length > 1) {
+      const first = parts[0];
+      const last = parts[parts.length - 1];
+
+      // Database provenance stores current → older/origin.
+      // Learner-facing evolution should read historical origin → current.
+      if ((current && first === current) || (origin && last === origin && first !== origin)) {
+        return [...parts].reverse().join(' → ');
+      }
+
+      if (origin && current && first === origin && last === current) {
+        return parts.join(' → ');
+      }
+
+      return parts.join(' → ');
+    }
+  }
+
+  if (origin && current && origin !== current) {
+    return `${origin} → ${current}`;
+  }
+
+  return '';
+}
+
 function FormationPanel({ card }) {
   const formation = card.formation;
   const claims = formation?.claims || [];
@@ -393,82 +431,88 @@ function FormationPanel({ card }) {
     (formation?.originChar && formation.originChar !== card.kanji) ||
     (formation?.originIds && formation?.currentVisualIds && formation.originIds !== formation.currentVisualIds)
   );
+  const evolutionPath = hasOriginDifference ? getFormationEvolutionPath(card, formation) : '';
 
   return (
-    <section className="learning-section formation-section" aria-label="Nguồn gốc cấu tạo">
-      <SectionHead
-        title="Nguồn gốc cấu tạo"
-        meta={formation?.conflict ? 'Có bất đồng giữa nguồn' : undefined}
-      />
+    <details className="learning-section formation-section">
+      <summary className="formation-toggle">
+        <span className="formation-toggle-title">Nguồn gốc cấu tạo</span>
+        <span className="formation-toggle-side">
+          {formation?.conflict && <span className="formation-toggle-meta">Có bất đồng giữa nguồn</span>}
+          <span className="formation-toggle-icon" aria-hidden="true">⌄</span>
+        </span>
+      </summary>
 
-      {card.etymology && (
-        <div className="formation-summary">
-          <p>{card.etymology}</p>
-        </div>
-      )}
-
-      {formation && (
-        <>
-          <div className="formation-facts">
-            <FormationFact label="Phân loại" value={formationLabel(formation.selectedType || card.formationType)} />
-            {formation.quality && <FormationFact label="Độ chắc chắn" value={QUALITY_LABELS[formation.quality] || formation.quality} />}
-            {formation.originChar && <FormationFact label="Dạng gốc" value={formation.originChar} cjk />}
-            {formation.originIds && <FormationIdsFact label="IDS dạng gốc" value={formation.originIds} />}
-            {formation.currentVisualIds && <FormationIdsFact label="IDS hiện tại" value={formation.currentVisualIds} />}
-            {hasOriginDifference && formation.originPath && <FormationFact label="Biến đổi dạng" value={formation.originPath} cjk />}
+      <div className="formation-body">
+        {card.etymology && (
+          <div className="formation-summary">
+            <p>{card.etymology}</p>
           </div>
+        )}
 
-          {formation.conflict && (
-            <div className="formation-conflict">
-              <strong>Bất đồng giữa nguồn</strong>
-              <p>
-                Các nguồn không hoàn toàn thống nhất về loại cấu tạo. Bên dưới hiển thị đầy đủ từng phân tích thay vì tự động gộp hoặc bỏ một nguồn.
-              </p>
+        {formation && (
+          <>
+            <div className="formation-facts">
+              <FormationFact label="Phân loại" value={formationLabel(formation.selectedType || card.formationType)} />
+              {formation.quality && <FormationFact label="Độ chắc chắn" value={QUALITY_LABELS[formation.quality] || formation.quality} />}
+              {formation.originChar && <FormationFact label="Dạng gốc" value={formation.originChar} cjk />}
+              {formation.originIds && <FormationIdsFact label="IDS dạng gốc" value={formation.originIds} />}
+              {formation.currentVisualIds && <FormationIdsFact label="IDS hiện tại" value={formation.currentVisualIds} />}
+              {evolutionPath && <FormationFact label="Biến đổi dạng" value={evolutionPath} cjk />}
             </div>
-          )}
 
-          {claims.length > 0 && (
-            <div className="formation-claims">
-              <div className="formation-claims-head">
-                <h3>Phân tích theo từng nguồn</h3>
-                <span>{claims.length} nguồn/claim</span>
+            {formation.conflict && (
+              <div className="formation-conflict">
+                <strong>Bất đồng giữa nguồn</strong>
+                <p>
+                  Các nguồn không hoàn toàn thống nhất về loại cấu tạo. Bên dưới hiển thị đầy đủ từng phân tích thay vì tự động gộp hoặc bỏ một nguồn.
+                </p>
               </div>
-              <div className="formation-claim-list">
-                {claims.map((claim, index) => (
-                  <article className="formation-claim" key={`${claim.source}-${claim.scope}-${claim.type}-${index}`}>
-                    <div className="formation-claim-head">
-                      <strong>{formationLabel(claim.type)}</strong>
-                      <span>{SCOPE_LABELS[claim.scope] || claim.scope || 'không ghi scope'}</span>
-                    </div>
-                    <div className="formation-source-line">
-                      {claim.sourceUrl ? (
-                        <a href={claim.sourceUrl} target="_blank" rel="noreferrer">{sourceLabel(claim.source)}</a>
-                      ) : (
-                        <span>{sourceLabel(claim.source)}</span>
-                      )}
-                      {claim.weight != null && <small>trọng số {claim.weight}</small>}
-                    </div>
-                    {claim.detail && <p className="formation-claim-detail">{claim.detail}</p>}
-                  </article>
-                ))}
+            )}
+
+            {claims.length > 0 && (
+              <div className="formation-claims">
+                <div className="formation-claims-head">
+                  <h3>Phân tích theo từng nguồn</h3>
+                  <span>{claims.length} nguồn/claim</span>
+                </div>
+                <div className="formation-claim-list">
+                  {claims.map((claim, index) => (
+                    <article className="formation-claim" key={`${claim.source}-${claim.scope}-${claim.type}-${index}`}>
+                      <div className="formation-claim-head">
+                        <strong>{formationLabel(claim.type)}</strong>
+                        <span>{SCOPE_LABELS[claim.scope] || claim.scope || 'không ghi scope'}</span>
+                      </div>
+                      <div className="formation-source-line">
+                        {claim.sourceUrl ? (
+                          <a href={claim.sourceUrl} target="_blank" rel="noreferrer">{sourceLabel(claim.source)}</a>
+                        ) : (
+                          <span>{sourceLabel(claim.source)}</span>
+                        )}
+                        {claim.weight != null && <small>trọng số {claim.weight}</small>}
+                      </div>
+                      {claim.detail && <p className="formation-claim-detail">{claim.detail}</p>}
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="formation-provenance">
+              <span>Nguồn cấu trúc</span>
+              <div>
+                {formation.sourceIdsAnalysis && (
+                  <a href={formation.sourceIdsAnalysis} target="_blank" rel="noreferrer">IDS Analysis</a>
+                )}
+                {formation.sourceEtymologyCrosscheck && (
+                  <a href={formation.sourceEtymologyCrosscheck} target="_blank" rel="noreferrer">Etymology cross-check</a>
+                )}
               </div>
             </div>
-          )}
-
-          <div className="formation-provenance">
-            <span>Nguồn cấu trúc</span>
-            <div>
-              {formation.sourceIdsAnalysis && (
-                <a href={formation.sourceIdsAnalysis} target="_blank" rel="noreferrer">IDS Analysis</a>
-              )}
-              {formation.sourceEtymologyCrosscheck && (
-                <a href={formation.sourceEtymologyCrosscheck} target="_blank" rel="noreferrer">Etymology cross-check</a>
-              )}
-            </div>
-          </div>
-        </>
-      )}
-    </section>
+          </>
+        )}
+      </div>
+    </details>
   );
 }
 

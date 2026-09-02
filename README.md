@@ -77,3 +77,13 @@ Back card renders the complete `kanji_formation.csv` evidence instead of only th
 - source links when the database contains them
 
 The UI does not reconcile conflicting claims. It preserves the source-level disagreement. Visual component cards still use `current_visual_ids`; origin/formation evidence stays in the separate “Nguồn gốc cấu tạo” section.
+
+
+## Formation UI v6
+
+- `Nguồn gốc cấu tạo` **collapsed mặc định** bằng native `<details>`.
+- Field provenance `formation.originPath` trong data được giữ nguyên theo hướng **chữ hiện tại → dạng cũ/gốc** để audit.
+- UI `Biến đổi dạng` cố ý render theo chiều lịch sử **dạng gốc → chữ hiện tại**.
+  - `内 → 內` (raw provenance) sẽ hiển thị `內 → 内`.
+  - `万 → 萬 → 𥝅` (raw provenance) sẽ hiển thị `𥝅 → 萬 → 万`.
+- Không sửa/ngược dữ liệu nguồn; chỉ đổi presentation direction ở UI.
