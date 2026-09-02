@@ -1,0 +1,57 @@
+/* Compact and visually align the collapsed formation header on wide cards. */
+.formation-toggle {
+  position: relative;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 13px 34px 13px 2px;
+}
+
+.formation-toggle-title,
+.formation-toggle-meta {
+  line-height: 1.3;
+}
+
+.formation-toggle-side {
+  flex: 0 1 auto;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+.formation-toggle-icon {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 2px;
+  width: 24px;
+  height: 24px;
+  font-size: 0;
+  transform: translateY(-50%);
+}
+
+.formation-toggle-icon::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-inline-end: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 160ms ease;
+}
+
+.formation-section[open] .formation-toggle-icon {
+  transform: translateY(-50%);
+}
+
+.formation-section[open] .formation-toggle-icon::before {
+  transform: rotate(225deg);
+}
+
+@media (max-width: 640px) {
+  .formation-toggle {
+    gap: 10px;
+    padding-inline-end: 32px;
+  }
+
+  .formation-toggle-meta {
+    max-width: 140px;
+  }
+}
