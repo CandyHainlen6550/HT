@@ -58,15 +58,50 @@
 
 /* Formation IDS: render verified CHISE/CDP leaves as glyphs and keep IDC symbols readable. */
 .formation-ids-value code {
-  font-family: var(--font-cjk);
+  font-family: "Segoe UI Symbol", "Noto Sans CJK JP", "Yu Gothic", "Hiragino Sans", "Arial Unicode MS", sans-serif;
   font-size: 0.94rem;
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
 
+/* styles.css makes the root IDS preview inline-flex, which breaks the parser's grid composition:
+ * a GlyphWiki leaf consumes the whole 42px box and the next leaf spills out to the right.
+ * Restore the same grid semantics used by nested .ids-compose nodes. */
+.formation-ids-value > .ids-compose {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  place-items: stretch;
+}
+
+.formation-ids-value > .ids-compose.ids-compose--h {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+.formation-ids-value > .ids-compose.ids-compose--v {
+  grid-auto-flow: row;
+  grid-auto-rows: minmax(0, 1fr);
+}
+
+.formation-ids-value > .ids-compose.ids-compose--overlay {
+  display: grid;
+}
+
+.formation-ids-value > .ids-compose.ids-compose--overlay > * {
+  grid-area: 1 / 1;
+}
+
+.formation-ids-value .ids-leaf {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .formation-ids-value .ids-leaf--entity-svg,
 .formation-ids-value .ids-leaf--entity-unicode {
-  transform: none;
+  transform: scale(0.9);
 }
 
 .formation-ids-value .ids-leaf--entity-svg img {
