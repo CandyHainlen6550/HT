@@ -333,17 +333,164 @@ function CardBack({ card, onOpenComponent }) {
         </div>
       </section>
 
-      {card.etymology && (
-        <details className="etymology-note">
-          <summary>Nguồn gốc cấu tạo</summary>
-          <p>{card.etymology}</p>
-        </details>
+      {(card.etymology || card.formation) && (
+        <FormationPanel card={card} />
       )}
 
       <section className="learning-section stroke-section">
         <SectionHead title="Thứ tự nét" />
         <StrokeOrder key={card.id} kanji={card.kanji} />
       </section>
+    </div>
+  );
+}
+
+
+const CLAIM_TYPE_LABELS = {
+  pictographic: 'Tượng hình',
+  indicative: 'Chỉ sự',
+  ideographic: 'Hội ý',
+  'compound-ideograph': 'Hội ý',
+  compound_ideograph: 'Hội ý',
+  'phono-semantic': 'Hình thanh',
+  phono_semantic: 'Hình thanh',
+  kokuji: 'Quốc tự',
+  component: 'Thành phần',
+  unknown: 'Chưa xác định',
+};
+
+const QUALITY_LABELS = {
+  high: 'Cao',
+  medium: 'Trung bình',
+  low: 'Thấp',
+};
+
+const SCOPE_LABELS = {
+  current: 'dạng hiện tại',
+  origin: 'dạng gốc',
+};
+
+function formationLabel(value) {
+  return CLAIM_TYPE_LABELS[value] || FORMATION_LABELS[value] || value || 'Chưa xác định';
+}
+
+function sourceLabel(value) {
+  const labels = {
+    'ids-analysis': 'CJKVI IDS Analysis',
+    ids_analysis: 'CJKVI IDS Analysis',
+    'hanzi-etymology-dict.aggregate': 'Hanzi Etymology Dict',
+    wiktionary: 'Wiktionary',
+    dong_chinese: 'Dong Chinese',
+  };
+  return labels[value] || value || 'Nguồn khác';
+}
+
+function FormationPanel({ card }) {
+  const formation = card.formation;
+  const claims = formation?.claims || [];
+  const hasOriginDifference = Boolean(
+    formation?.historicalFormDiffers ||
+    (formation?.originChar && formation.originChar !== card.kanji) ||
+    (formation?.originIds && formation?.currentVisualIds && formation.originIds !== formation.currentVisualIds)
+  );
+
+  return (
+    <section className="learning-section formation-section" aria-label="Nguồn gốc cấu tạo">
+      <SectionHead
+        title="Nguồn gốc cấu tạo"
+        meta={formation?.conflict ? 'Có bất đồng giữa nguồn' : undefined}
+      />
+
+      {card.etymology && (
+        <div className="formation-summary">
+          <p>{card.etymology}</p>
+        </div>
+      )}
+
+      {formation && (
+        <>
+          <div className="formation-facts">
+            <FormationFact label="Phân loại" value={formationLabel(formation.selectedType || card.formationType)} />
+            {formation.quality && <FormationFact label="Độ chắc chắn" value={QUALITY_LABELS[formation.quality] || formation.quality} />}
+            {formation.originChar && <FormationFact label="Dạng gốc" value={formation.originChar} cjk />}
+            {formation.originIds && <FormationIdsFact label="IDS dạng gốc" value={formation.originIds} />}
+            {formation.currentVisualIds && <FormationIdsFact label="IDS hiện tại" value={formation.currentVisualIds} />}
+            {hasOriginDifference && formation.originPath && <FormationFact label="Biến đổi dạng" value={formation.originPath} cjk />}
+          </div>
+
+          {formation.conflict && (
+            <div className="formation-conflict">
+              <strong>Bất đồng giữa nguồn</strong>
+              <p>
+                Các nguồn không hoàn toàn thống nhất về loại cấu tạo. Bên dưới hiển thị đầy đủ từng phân tích thay vì tự động gộp hoặc bỏ một nguồn.
+              </p>
+            </div>
+          )}
+
+          {claims.length > 0 && (
+            <div className="formation-claims">
+              <div className="formation-claims-head">
+                <h3>Phân tích theo từng nguồn</h3>
+                <span>{claims.length} nguồn/claim</span>
+              </div>
+              <div className="formation-claim-list">
+                {claims.map((claim, index) => (
+                  <article className="formation-claim" key={`${claim.source}-${claim.scope}-${claim.type}-${index}`}>
+                    <div className="formation-claim-head">
+                      <strong>{formationLabel(claim.type)}</strong>
+                      <span>{SCOPE_LABELS[claim.scope] || claim.scope || 'không ghi scope'}</span>
+                    </div>
+                    <div className="formation-source-line">
+                      {claim.sourceUrl ? (
+                        <a href={claim.sourceUrl} target="_blank" rel="noreferrer">{sourceLabel(claim.source)}</a>
+                      ) : (
+                        <span>{sourceLabel(claim.source)}</span>
+                      )}
+                      {claim.weight != null && <small>trọng số {claim.weight}</small>}
+                    </div>
+                    {claim.detail && <p className="formation-claim-detail">{claim.detail}</p>}
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="formation-provenance">
+            <span>Nguồn cấu trúc</span>
+            <div>
+              {formation.sourceIdsAnalysis && (
+                <a href={formation.sourceIdsAnalysis} target="_blank" rel="noreferrer">IDS Analysis</a>
+              )}
+              {formation.sourceEtymologyCrosscheck && (
+                <a href={formation.sourceEtymologyCrosscheck} target="_blank" rel="noreferrer">Etymology cross-check</a>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+function FormationFact({ label, value, cjk = false }) {
+  if (!value) return null;
+  return (
+    <div className="formation-fact">
+      <span>{label}</span>
+      <strong className={cjk ? 'cjk' : ''}>{value}</strong>
+    </div>
+  );
+}
+
+function FormationIdsFact({ label, value }) {
+  if (!value) return null;
+  return (
+    <div className="formation-fact formation-fact--ids">
+      <span>{label}</span>
+      <div className="formation-ids-value">
+        <IdsGlyph expression={value} />
+        <code>{value}</code>
+      </div>
     </div>
   );
 }

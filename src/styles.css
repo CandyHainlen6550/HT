@@ -1194,3 +1194,236 @@ button:disabled {
   font-size: 0.96rem;
   font-weight: 600;
 }
+
+
+/* Full formation/origin rendering — no truncation, no hidden claims. */
+.formation-section {
+  padding-top: 2px;
+}
+
+.formation-section .section-head {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.formation-section .section-head span {
+  color: var(--color-warm);
+  font-weight: 650;
+}
+
+.formation-summary {
+  padding: 15px 16px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-panel);
+  background: var(--color-panel-soft);
+}
+
+.formation-summary p,
+.formation-conflict p,
+.formation-claim-detail {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.formation-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+}
+
+.formation-fact {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.formation-fact:nth-child(odd) {
+  border-inline-end: 1px solid var(--color-line);
+}
+
+.formation-fact span,
+.formation-provenance > span {
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.formation-fact strong {
+  color: var(--color-text);
+  font-size: 0.94rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.formation-ids-value {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text);
+}
+
+.formation-ids-value > .ids-compose,
+.formation-ids-value > .ids-leaf {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  background: var(--color-canvas-deep);
+  font-size: 1.25rem;
+}
+
+.formation-ids-value code {
+  min-width: 0;
+  color: var(--color-text-soft);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.formation-conflict {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-warm-line);
+  border-radius: var(--radius-panel);
+  background: var(--color-warm-surface);
+}
+
+.formation-conflict strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-warm);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.formation-claims {
+  margin-top: 16px;
+}
+
+.formation-claims-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.formation-claims-head h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.96rem;
+}
+
+.formation-claims-head span {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.formation-claim-list {
+  display: grid;
+  gap: 10px;
+}
+
+.formation-claim {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background: var(--color-canvas-deep);
+}
+
+.formation-claim-head,
+.formation-source-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.formation-claim-head strong {
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.formation-claim-head span,
+.formation-source-line small {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.formation-source-line {
+  margin-top: 6px;
+  justify-content: flex-start;
+}
+
+.formation-source-line a,
+.formation-source-line > span,
+.formation-provenance a {
+  color: var(--color-accent);
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.formation-source-line a:hover,
+.formation-provenance a:hover {
+  text-decoration: underline;
+}
+
+.formation-claim-detail {
+  margin-top: 10px;
+}
+
+.formation-provenance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-line);
+}
+
+.formation-provenance > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px 14px;
+}
+
+@media (max-width: 680px) {
+  .formation-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .formation-fact:nth-child(odd) {
+    border-inline-end: 0;
+  }
+
+  .formation-claim-head,
+  .formation-provenance {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .formation-provenance > div {
+    justify-content: flex-start;
+  }
+}

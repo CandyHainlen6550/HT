@@ -62,3 +62,18 @@ Ví dụ bắt buộc:
 - `間` hiện đại = `⿵門日` → card phải là **門 + 日**.
 - Dạng lịch sử/origin có thể là `閒 = ⿵門月`; thông tin này chỉ xuất hiện trong phần tự nguyên.
 - Recursive chỉ mở khi decomposition cấp dưới đủ rõ cho người học; không mở các mảnh kỹ thuật vô nghĩa như decomposition nội bộ của `門`.
+
+
+## Full Formation rendering
+
+Back card renders the complete `kanji_formation.csv` evidence instead of only the short `etymology` sentence:
+
+- selected formation type and quality
+- current visual IDS
+- historical/origin character and IDS
+- whether historical form differs
+- conflict warning
+- every item from `formation_claims_json` with type, scope, source and **full detail text**
+- source links when the database contains them
+
+The UI does not reconcile conflicting claims. It preserves the source-level disagreement. Visual component cards still use `current_visual_ids`; origin/formation evidence stays in the separate “Nguồn gốc cấu tạo” section.
