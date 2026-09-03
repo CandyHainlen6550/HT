@@ -1,6 +1,4 @@
 const HAN_VIET_MULTI_READING_FIXES = Object.freeze({
-  // Generated from the user's canonical Jōyō 2,136 source. The frontend deck
-  // build had kept only the first reading for comma-separated Hán-Việt values.
   '中': 'Trung, Trúng',
   '付': 'Phó, Phụ',
   '伝': 'Truyền, Truyện',
@@ -42,10 +40,6 @@ const HAN_VIET_MULTI_READING_FIXES = Object.freeze({
 });
 
 const LEARNER_COMPONENT_EXPANSIONS = Object.freeze({
-  // 夢 is visually ⿱(⿳艹⺫冖)夕. The canonical L1 tree therefore has two children,
-  // but the first child is a structural wrapper with no learner-facing metadata.
-  // Expand only this wrapper for the study cards so the learner sees the useful
-  // visual pieces while the canonical IDS/origin data remains unchanged.
   '⿳艹⺫冖': Object.freeze([
     Object.freeze({
       component: '艹',
@@ -95,10 +89,8 @@ const LEARNER_COMPONENT_EXPANSIONS = Object.freeze({
   ]),
 });
 
-// Unicode Extension G+ characters are legitimate component identities, but the
-// fonts available on most browsers (including Noto Serif JP) do not cover them.
-// Keep the canonical Unicode key, but render the visible glyph through GlyphWiki
-// so the UI does not show a tofu/missing-glyph box.
+const IDS_OPERATORS = new Set(['⿰', '⿱', '⿲', '⿳', '⿴', '⿵', '⿶', '⿷', '⿸', '⿹', '⿺', '⿻']);
+
 const RARE_COMPONENT_COPY_FIXES = Object.freeze({
   '𰃮': Object.freeze({
     meaning: 'dạng giản hóa/shinjitai dùng làm component; tương ứng với phần hình thể phía trên của 學, Nhật dùng trong 学・覚・栄・労…',
@@ -114,6 +106,34 @@ function isExtensionGFallbackCandidate(value) {
 function glyphwikiUnicodeUrl(glyph) {
   const codepoint = glyph.codePointAt(0).toString(16).toLowerCase();
   return `https://glyphwiki.org/glyph/u${codepoint}.svg`;
+}
+
+function isStructuralIdsWrapper(component) {
+  if (!component || typeof component !== 'object') return false;
+  if (component.renderType === 'ids_tree') return true;
+  const identity = String(component.component || component.renderValue || component.display || '');
+  const first = [...identity][0];
+  return Boolean(first && IDS_OPERATORS.has(first));
+}
+
+function inheritChildMetadata(parent, child) {
+  return {
+    ...child,
+    role: child.role || parent.role || 'thành phần hình thể',
+    source: child.source || parent.source || 'parent IDS subtree',
+    children: Array.isArray(child.children) ? child.children : [],
+  };
+}
+
+function expandStructuralComponent(component) {
+  const manual = LEARNER_COMPONENT_EXPANSIONS[component?.component];
+  if (manual) return manual.map((entry) => ({ ...entry }));
+
+  if (!isStructuralIdsWrapper(component) || !Array.isArray(component.children) || component.children.length === 0) {
+    return [component];
+  }
+
+  return component.children.flatMap((child) => expandStructuralComponent(inheritChildMetadata(component, child)));
 }
 
 function normaliseComponentRendering(component) {
@@ -157,15 +177,9 @@ function normaliseComponentRendering(component) {
 function expandLearnerComponents(components) {
   if (!Array.isArray(components) || components.length === 0) return components || [];
 
-  let changed = false;
-  const expanded = components.flatMap((component) => {
-    const replacement = LEARNER_COMPONENT_EXPANSIONS[component?.component];
-    if (!replacement) return [component];
-    changed = true;
-    return replacement.map((entry) => ({ ...entry }));
-  });
-
-  return changed ? expanded : components;
+  const expanded = components.flatMap(expandStructuralComponent);
+  const unchanged = expanded.length === components.length && expanded.every((component, index) => component === components[index]);
+  return unchanged ? components : expanded;
 }
 
 function normaliseLearnerComponents(components) {
