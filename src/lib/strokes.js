@@ -9,7 +9,7 @@ export function kanjiVGFilename(kanji) {
 export function kanjiVGSources(kanji) {
   const filename = kanjiVGFilename(kanji);
   return [
-    `https://kanjivg.tagaini.net/kanji/${filename}`,
+    `https://kanjivg.tagaini.net/kanjivg/kanji/${filename}`,
     `https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/${filename}`,
   ];
 }
