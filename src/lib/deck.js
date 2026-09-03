@@ -1,3 +1,46 @@
+const HAN_VIET_MULTI_READING_FIXES = Object.freeze({
+  // Generated from the user's canonical Jōyō 2,136 source. The frontend deck
+  // build had kept only the first reading for comma-separated Hán-Việt values.
+  '中': 'Trung, Trúng',
+  '付': 'Phó, Phụ',
+  '伝': 'Truyền, Truyện',
+  '住': 'Trú, Trụ',
+  '分': 'Phân, Phần',
+  '占': 'Chiếm, Chiêm',
+  '強': 'Cường, Cưỡng',
+  '弾': 'Đàn, Đạn',
+  '帳': 'Trương, Trướng',
+  '台': 'Đài, Thai',
+  '命': 'Mệnh, Mạng',
+  '好': 'Hiếu, Hảo',
+  '少': 'Thiểu, Thiếu',
+  '将': 'Tướng, Tương',
+  '著': 'Trứ, Trước',
+  '当': 'Đương, Đáng',
+  '為': 'Vi, Vị',
+  '断': 'Đoạn, Đoán',
+  '思': 'Tư, Tứ',
+  '悪': 'Ác, Ố',
+  '慢': 'Mạn, Mãn',
+  '易': 'Dị, Dịch',
+  '暴': 'Bạo, Bộc',
+  '楽': 'Nhạc, Lạc',
+  '称': 'Xưng, Xứng',
+  '監': 'Giám, Giam',
+  '画': 'Họa, Hoạch',
+  '相': 'Tương, Tướng',
+  '興': 'Hứng, Hưng',
+  '行': 'Hành, Hàng',
+  '臭': 'Khứu, Xú',
+  '要': 'Yêu, Yếu',
+  '処': 'Xứ, Xử',
+  '調': 'Điều, Điệu',
+  '重': 'Trọng, Trùng',
+  '長': 'Trường, Trưởng',
+  '間': 'Gian, Gián',
+  '難': 'Nan, Nạn',
+});
+
 const LEARNER_COMPONENT_EXPANSIONS = Object.freeze({
   // 夢 is visually ⿱(⿳艹⺫冖)夕. The canonical L1 tree therefore has two children,
   // but the first child is a structural wrapper with no learner-facing metadata.
@@ -68,7 +111,10 @@ function expandLearnerComponents(components) {
 
 function normaliseLearnerCard(card) {
   const components = expandLearnerComponents(card?.components);
-  return components === card?.components ? card : { ...card, components };
+  const hanViet = HAN_VIET_MULTI_READING_FIXES[card?.kanji] || card?.hanViet;
+
+  if (components === card?.components && hanViet === card?.hanViet) return card;
+  return { ...card, hanViet, components };
 }
 
 export async function loadManifest() {
