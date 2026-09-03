@@ -1,0 +1,53 @@
+/* Recursive component dialog readability overrides.
+ * Keep the compact component cards unchanged; only enlarge glyphs inside
+ * the modal where the learner is explicitly inspecting a component tree.
+ */
+
+.recursive-dialog .dialog-title-row > .glyph-box {
+  width: 96px;
+  border-radius: 14px;
+  font-size: 4.15rem;
+}
+
+.recursive-dialog .recursive-child > .glyph-box {
+  width: 88px;
+  border-radius: 14px;
+  font-size: 3.7rem;
+}
+
+.recursive-dialog .glyph-box img {
+  width: 90%;
+  height: 90%;
+}
+
+.recursive-dialog .glyph-box > .ids-compose,
+.recursive-dialog .glyph-box > .ids-leaf {
+  width: 94%;
+  height: 94%;
+}
+
+.recursive-dialog .dialog-title-row {
+  gap: 18px;
+}
+
+.recursive-dialog .recursive-child {
+  gap: 18px;
+  padding: 16px;
+}
+
+@media (max-width: 560px) {
+  .recursive-dialog .dialog-title-row > .glyph-box {
+    width: 84px;
+    font-size: 3.6rem;
+  }
+
+  .recursive-dialog .recursive-child > .glyph-box {
+    width: 78px;
+    font-size: 3.25rem;
+  }
+
+  .recursive-dialog .dialog-title-row,
+  .recursive-dialog .recursive-child {
+    gap: 14px;
+  }
+}
