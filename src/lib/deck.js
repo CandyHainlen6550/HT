@@ -95,6 +95,65 @@ const LEARNER_COMPONENT_EXPANSIONS = Object.freeze({
   ]),
 });
 
+// Unicode Extension G+ characters are legitimate component identities, but the
+// fonts available on most browsers (including Noto Serif JP) do not cover them.
+// Keep the canonical Unicode key, but render the visible glyph through GlyphWiki
+// so the UI does not show a tofu/missing-glyph box.
+const RARE_COMPONENT_COPY_FIXES = Object.freeze({
+  '𰃮': Object.freeze({
+    meaning: 'dạng giản hóa/shinjitai dùng làm component; tương ứng với phần hình thể phía trên của 學, Nhật dùng trong 学・覚・栄・労…',
+    mnemonic: 'Nhớ mảnh hình này là phần giản hóa xuất hiện trong 学・覚・栄・労…; không coi nó là một chữ nghĩa độc lập mới.',
+  }),
+});
+
+function isExtensionGFallbackCandidate(value) {
+  const chars = [...String(value || '')];
+  return chars.length === 1 && chars[0].codePointAt(0) >= 0x30000;
+}
+
+function glyphwikiUnicodeUrl(glyph) {
+  const codepoint = glyph.codePointAt(0).toString(16).toLowerCase();
+  return `https://glyphwiki.org/glyph/u${codepoint}.svg`;
+}
+
+function normaliseComponentRendering(component) {
+  if (!component || typeof component !== 'object') return component;
+
+  let output = component;
+  const identity = component.component || component.display || component.renderValue || '';
+  const visibleGlyph = component.renderValue || component.display || component.component || '';
+  const renderType = component.renderType || 'unicode';
+
+  if (renderType === 'unicode' && isExtensionGFallbackCandidate(visibleGlyph)) {
+    const glyph = [...String(visibleGlyph)][0];
+    const glyphwikiName = `u${glyph.codePointAt(0).toString(16).toLowerCase()}`;
+    output = {
+      ...output,
+      renderType: 'glyphwiki_svg',
+      renderValue: glyphwikiUnicodeUrl(glyph),
+      glyphwikiName,
+    };
+  }
+
+  const copyFix = RARE_COMPONENT_COPY_FIXES[identity];
+  if (copyFix) {
+    output = {
+      ...output,
+      meaning: copyFix.meaning,
+      mnemonic: copyFix.mnemonic,
+    };
+  }
+
+  if (Array.isArray(output.children) && output.children.length > 0) {
+    const children = output.children.map(normaliseComponentRendering);
+    if (children.some((child, index) => child !== output.children[index])) {
+      output = { ...output, children };
+    }
+  }
+
+  return output;
+}
+
 function expandLearnerComponents(components) {
   if (!Array.isArray(components) || components.length === 0) return components || [];
 
@@ -109,8 +168,14 @@ function expandLearnerComponents(components) {
   return changed ? expanded : components;
 }
 
+function normaliseLearnerComponents(components) {
+  const expanded = expandLearnerComponents(components);
+  const normalised = expanded.map(normaliseComponentRendering);
+  return normalised.some((component, index) => component !== expanded[index]) ? normalised : expanded;
+}
+
 function normaliseLearnerCard(card) {
-  const components = expandLearnerComponents(card?.components);
+  const components = normaliseLearnerComponents(card?.components);
   const hanViet = HAN_VIET_MULTI_READING_FIXES[card?.kanji] || card?.hanViet;
 
   if (components === card?.components && hanViet === card?.hanViet) return card;
