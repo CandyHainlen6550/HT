@@ -4,6 +4,7 @@ import App from './App.jsx';
 import { installIdsEntityRenderer } from './lib/idsEntityRender.js';
 import './styles.css';
 import './formation-fix.css';
+import './dialog-fix.css';
 
 const rootElement = document.getElementById('root');
 installIdsEntityRenderer(rootElement);
