@@ -1,0 +1,22 @@
+name: Export KanjiVG for offline Anki build
+
+on:
+  push:
+    paths:
+      - '.github/workflows/export-kanjivg.yml'
+
+jobs:
+  export-kanjivg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch KanjiVG
+        run: git clone --depth 1 https://github.com/KanjiVG/kanjivg.git kanjivg
+      - name: Package stroke SVGs
+        run: tar -czf kanjivg-kanji.tar.gz -C kanjivg kanji
+      - name: Upload stroke data
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanjivg-kanji
+          path: kanjivg-kanji.tar.gz
+          if-no-files-found: error
+          retention-days: 1
