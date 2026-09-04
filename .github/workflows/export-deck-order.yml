@@ -1,4 +1,4 @@
-name: Export deck order for Anki rebuild
+name: Export Sơ cấp sources for Anki rebuild
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Extract exact repo deck order
+      - name: Validate exact repo deck sources
         run: |
           python - <<'PY'
           import json
@@ -19,13 +19,16 @@ jobs:
           for deck in ('sc1','sc2'):
               rows = json.loads(Path(f'public/data/{deck}.json').read_text(encoding='utf-8'))
               out[deck] = [r['kanji'] for r in rows]
+              print(deck, len(rows), ''.join(out[deck][:20]))
           Path('deck_order.json').write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding='utf-8')
-          print('sc1', len(out['sc1']), ''.join(out['sc1'][:20]))
-          print('sc2', len(out['sc2']), ''.join(out['sc2'][:20]))
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: deck-order
-          path: deck_order.json
+          name: deck-sources
+          path: |
+            public/data/decks.json
+            public/data/sc1.json
+            public/data/sc2.json
+            deck_order.json
           if-no-files-found: error
           retention-days: 1
