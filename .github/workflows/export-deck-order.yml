@@ -1,0 +1,31 @@
+name: Export deck order for Anki rebuild
+
+on:
+  push:
+    paths:
+      - '.github/workflows/export-deck-order.yml'
+
+jobs:
+  export-order:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract exact repo deck order
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          out = {}
+          for deck in ('sc1','sc2'):
+              rows = json.loads(Path(f'public/data/{deck}.json').read_text(encoding='utf-8'))
+              out[deck] = [r['kanji'] for r in rows]
+          Path('deck_order.json').write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding='utf-8')
+          print('sc1', len(out['sc1']), ''.join(out['sc1'][:20]))
+          print('sc2', len(out['sc2']), ''.join(out['sc2'][:20]))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deck-order
+          path: deck_order.json
+          if-no-files-found: error
+          retention-days: 1
