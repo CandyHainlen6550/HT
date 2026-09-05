@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import base64
-import gzip
 import json
 import re
 import shutil
+import tarfile
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,12 +36,25 @@ NEW_LOAD_DECK = """export async function loadDeck(fileOrFiles) {
 """
 
 
-def decode_payload(prefix: str) -> bytes:
-    parts = sorted(BOOTSTRAP.glob(f'{prefix}.*.b64'))
+def decode_archive() -> bytes:
+    parts = sorted(BOOTSTRAP.glob('learning_data.*.b64'))
     if not parts:
-        raise SystemExit(f'No bootstrap chunks found for {prefix}')
+        raise SystemExit('No learning_data bootstrap chunks found')
     encoded = ''.join(part.read_text(encoding='ascii').strip() for part in parts)
-    return gzip.decompress(base64.b64decode(encoded))
+    return base64.b64decode(encoded)
+
+
+def extract_payload(archive_raw: bytes) -> tuple[bytes, bytes]:
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = Path(tmp) / 'learning_data.tar.xz'
+        archive.write_bytes(archive_raw)
+        with tarfile.open(archive, mode='r:xz') as tf:
+            names = set(tf.getnames())
+            expected = {'learner_decomp.json', 'mnemonics.json'}
+            if names != expected:
+                raise SystemExit(f'Unexpected bootstrap archive members: {sorted(names)!r}')
+            tf.extractall(tmp)
+        return (Path(tmp) / 'learner_decomp.json').read_bytes(), (Path(tmp) / 'mnemonics.json').read_bytes()
 
 
 def validate(learner_raw: bytes, mnemonic_raw: bytes) -> None:
@@ -87,8 +101,7 @@ def main() -> None:
         print('No .bootstrap directory; nothing to sync.')
         return
 
-    learner_raw = decode_payload('learner_decomp')
-    mnemonic_raw = decode_payload('mnemonics')
+    learner_raw, mnemonic_raw = extract_payload(decode_archive())
     validate(learner_raw, mnemonic_raw)
 
     PUBLIC_DATA.mkdir(parents=True, exist_ok=True)
