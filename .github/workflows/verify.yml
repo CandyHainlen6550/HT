@@ -1,0 +1,32 @@
+name: Verify HT web
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify rare glyph mapping
+        run: |
+          node --input-type=module - <<'JS'
+          import { glyphWikiUnicodeUrl, isSupplementaryCjk } from './src/lib/rareGlyphRender.js';
+          if (!isSupplementaryCjk('𬺢')) throw new Error('U+2CEA2 must use the rare-glyph renderer');
+          if (isSupplementaryCjk('卄')) throw new Error('BMP component 卄 should remain normal Unicode text');
+          if (glyphWikiUnicodeUrl('𬺢') !== 'https://glyphwiki.org/glyph/u2cea2.svg') throw new Error('Unexpected GlyphWiki URL');
+          console.log('Rare glyph mapping OK: 𬺢 -> u2cea2.svg');
+          JS
+      - name: Verify GlyphWiki endpoint
+        run: |
+          curl --fail --silent --show-error --location https://glyphwiki.org/glyph/u2cea2.svg --output /tmp/u2cea2.svg
+          grep -qi '<svg' /tmp/u2cea2.svg
+          grep -Eqi '<(path|polygon|polyline)' /tmp/u2cea2.svg
+      - name: Build
+        run: npm run build

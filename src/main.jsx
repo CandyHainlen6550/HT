@@ -2,12 +2,15 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import { installIdsEntityRenderer } from './lib/idsEntityRender.js';
+import { installRareGlyphRenderer } from './lib/rareGlyphRender.js';
 import './styles.css';
 import './formation-fix.css';
 import './dialog-fix.css';
+import './rare-glyph-fix.css';
 
 const rootElement = document.getElementById('root');
 installIdsEntityRenderer(rootElement);
+installRareGlyphRenderer(rootElement);
 
 createRoot(rootElement).render(
   <StrictMode>
