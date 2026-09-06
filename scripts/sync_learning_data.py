@@ -37,9 +37,9 @@ NEW_LOAD_DECK = """export async function loadDeck(fileOrFiles) {
 
 
 def decode_archive() -> bytes:
-    parts = sorted(BOOTSTRAP.glob('bundle.*.b64'))
+    parts = sorted(BOOTSTRAP.glob('clean_bundle.*.b64'))
     if not parts:
-        raise SystemExit('No bootstrap bundle chunks found')
+        raise SystemExit('No clean bootstrap bundle chunks found')
     encoded = ''.join(part.read_text(encoding='ascii').strip() for part in parts)
     return base64.b64decode(encoded)
 
