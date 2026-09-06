@@ -1503,3 +1503,9 @@ button:disabled {
     text-overflow: ellipsis;
   }
 }
+
+
+.ht-inline-glyph {
+  font-family: "Noto Serif JP", "Noto Sans CJK JP", "Yu Mincho", serif;
+  display: inline-block;
+}

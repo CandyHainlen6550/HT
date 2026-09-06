@@ -1,3 +1,21 @@
+
+
+// Render rare CJK glyphs inside plain text (e.g. mnemonic strings)
+// through the same glyph pipeline used by decomposition cards.
+function renderInlineGlyphs(text) {
+  if (!text) return "";
+  return String(text).replace(
+    /[\u3400-\u4DBF\u4E00-\u9FFF\ud800-\udFFF]/g,
+    (ch) => {
+      const cp = ch.codePointAt(0);
+      if (typeof renderGlyphInline === "function") {
+        return renderGlyphInline(ch);
+      }
+      return `<span class="ht-inline-glyph">${ch}</span>`;
+    }
+  );
+}
+
 import { applyLearnerDecomp, applyMnemonic, loadLearnerDecomp, loadMnemonics } from './learningOverlay.js';
 
 const HAN_VIET_MULTI_READING_FIXES = Object.freeze({
