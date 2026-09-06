@@ -1,3 +1,5 @@
+import { applyLearnerDecomp, applyMnemonic, loadLearnerDecomp, loadMnemonics } from './learningOverlay.js';
+
 const HAN_VIET_MULTI_READING_FIXES = Object.freeze({
   '中': 'Trung, Trúng',
   '付': 'Phó, Phụ',
@@ -204,8 +206,16 @@ export async function loadManifest() {
 
 export async function loadDeck(fileOrFiles) {
   const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
-  const chunks = await Promise.all(files.map(loadJsonResource));
-  return chunks.flat().map(normaliseLearnerCard);
+  const [chunks, decomposition, mnemonics] = await Promise.all([
+    Promise.all(files.map(loadJsonResource)),
+    loadLearnerDecomp().catch(() => null),
+    loadMnemonics().catch(() => null),
+  ]);
+
+  let cards = chunks.flat().map(normaliseLearnerCard);
+  if (decomposition) cards = cards.map((card) => applyLearnerDecomp(card, decomposition));
+  if (mnemonics) cards = cards.map((card) => applyMnemonic(card, mnemonics));
+  return cards;
 }
 
 async function loadJsonResource(file) {
