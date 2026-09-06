@@ -1,0 +1,28 @@
+/* Supplementary CJK is rendered as a GlyphWiki SVG while preserving inline text flow. */
+.rare-glyph-inline {
+  display: inline-grid;
+  width: 1.08em;
+  height: 1.08em;
+  place-items: center;
+  vertical-align: -0.16em;
+  line-height: 1;
+}
+
+.rare-glyph-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: invert(0.94) sepia(0.04) saturate(0.6);
+}
+
+.rare-glyph-inline--fallback {
+  font-family: "Noto Serif CJK JP", "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif;
+}
+
+.glyph-box .rare-glyph-inline,
+.ids-leaf .rare-glyph-inline {
+  width: 82%;
+  height: 82%;
+  vertical-align: 0;
+}
