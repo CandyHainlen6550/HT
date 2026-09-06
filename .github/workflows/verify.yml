@@ -23,5 +23,10 @@ jobs:
           if (glyphWikiUnicodeUrl('𬺢') !== 'https://glyphwiki.org/glyph/u2cea2.svg') throw new Error('Unexpected GlyphWiki URL');
           console.log('Rare glyph mapping OK: 𬺢 -> u2cea2.svg');
           JS
+      - name: Verify GlyphWiki endpoint
+        run: |
+          curl --fail --silent --show-error --location https://glyphwiki.org/glyph/u2cea2.svg --output /tmp/u2cea2.svg
+          grep -qi '<svg' /tmp/u2cea2.svg
+          grep -Eqi '<(path|polygon|polyline)' /tmp/u2cea2.svg
       - name: Build
         run: npm run build
